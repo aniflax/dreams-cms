@@ -193,10 +193,47 @@ module.exports = {
   register(/*{ strapi }*/) {},
 
   async bootstrap({ strapi }) {
+    const ensurePublicPermissions = async () => {
+      console.log('Ensuring public permissions...');
+
+      const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'public' },
+      });
+
+      if (!publicRole) {
+        return;
+      }
+
+      const apis = ['product', 'category', 'homepage', 'about-page', 'contact-page', 'gallery'];
+
+      for (const api of apis) {
+        for (const action of [`api::${api}.${api}.find`, `api::${api}.${api}.findOne`]) {
+          const existingPermission = await strapi.db
+            .query('plugin::users-permissions.permission')
+            .findOne({
+              where: {
+                role: publicRole.id,
+                action,
+              },
+            });
+
+          if (!existingPermission) {
+            await strapi.db.query('plugin::users-permissions.permission').create({
+              data: {
+                action,
+                role: publicRole.id,
+              },
+            });
+          }
+        }
+      }
+    };
+
     const isProduction = process.env.NODE_ENV === 'production';
     const shouldSeed = strapi.config.get('server.ENABLE_SEED_DATA', !isProduction);
 
     if (!shouldSeed) {
+      await ensurePublicPermissions();
       console.log('Seed bootstrap disabled. Skipping...');
       return;
     }
@@ -299,30 +336,7 @@ module.exports = {
       }
     }
 
-    // Make permissions public
-    console.log('Setting public permissions...');
-    const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-      where: { type: 'public' },
-      populate: ['permissions'],
-    });
-
-    if (publicRole) {
-      const apis = ['product', 'category', 'homepage', 'about-page', 'contact-page', 'gallery'];
-      for (const api of apis) {
-        await strapi.db.query('plugin::users-permissions.permission').create({
-          data: {
-            action: `api::${api}.${api}.find`,
-            role: publicRole.id,
-          }
-        });
-        await strapi.db.query('plugin::users-permissions.permission').create({
-          data: {
-            action: `api::${api}.${api}.findOne`,
-            role: publicRole.id,
-          }
-        });
-      }
-    }
+    await ensurePublicPermissions();
 
     console.log('Seeding complete!');
   },
