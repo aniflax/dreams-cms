@@ -32,6 +32,8 @@ services:
         generateValue: true
       - key: JWT_SECRET
         generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
       # You will need to manually add these in the Render dashboard after deployment:
       # - CLOUDINARY_NAME
       # - CLOUDINARY_KEY
