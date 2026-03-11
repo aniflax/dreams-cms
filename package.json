@@ -4,6 +4,10 @@
   "private": true,
   "description": "A Strapi application",
   "scripts": {
+    "prebuild": "node scripts/check-node-version.js",
+    "predev": "node scripts/check-node-version.js",
+    "predevelop": "node scripts/check-node-version.js",
+    "prestart": "node scripts/check-node-version.js",
     "build": "strapi build",
     "console": "strapi console",
     "deploy": "strapi deploy",

@@ -1,7 +1,12 @@
 const path = require('path');
 
 module.exports = ({ env }) => {
-  const client = env('DATABASE_CLIENT', 'sqlite');
+  const isProduction = env('NODE_ENV', 'development') === 'production';
+  const client = env('DATABASE_CLIENT', isProduction ? 'postgres' : 'sqlite');
+
+  if (isProduction && client !== 'postgres') {
+    throw new Error('Production deployments must use the PostgreSQL database configured in Render.');
+  }
 
   const connections = {
     mysql: {
@@ -49,6 +54,14 @@ module.exports = ({ env }) => {
       useNullAsDefault: true,
     },
   };
+
+  if (!connections[client]) {
+    throw new Error(`Unsupported DATABASE_CLIENT "${client}".`);
+  }
+
+  if (client === 'postgres' && !env('DATABASE_URL') && !env('DATABASE_HOST')) {
+    throw new Error('PostgreSQL requires DATABASE_URL or DATABASE_HOST-based credentials.');
+  }
 
   return {
     connection: {

@@ -16,6 +16,12 @@ services:
         fromDatabase:
           name: dreams-db
           property: connectionString
+      - key: DATABASE_SSL
+        value: true
+      - key: DATABASE_SSL_REJECT_UNAUTHORIZED
+        value: false
+      - key: ENABLE_SEED_DATA
+        value: false
       - key: APP_KEYS
         generateValue: true
       - key: API_TOKEN_SALT

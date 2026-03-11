@@ -193,6 +193,14 @@ module.exports = {
   register(/*{ strapi }*/) {},
 
   async bootstrap({ strapi }) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const shouldSeed = strapi.config.get('server.ENABLE_SEED_DATA', !isProduction);
+
+    if (!shouldSeed) {
+      console.log('Seed bootstrap disabled. Skipping...');
+      return;
+    }
+
     // Check if we already seeded to avoid duplicates
     const productCount = await strapi.documents('api::product.product').count();
     if (productCount > 0) {
