@@ -20,6 +20,10 @@ services:
         value: true
       - key: DATABASE_SSL_REJECT_UNAUTHORIZED
         value: false
+      - key: FRONTEND_URL
+        value: https://dreamfurnitures.com
+      - key: FRONTEND_WWW_URL
+        value: https://www.dreamfurnitures.com
       - key: ENABLE_SEED_DATA
         value: false
       - key: APP_KEYS
