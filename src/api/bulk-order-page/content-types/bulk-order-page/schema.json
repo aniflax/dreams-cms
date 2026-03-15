@@ -1,0 +1,59 @@
+{
+  "kind": "singleType",
+  "collectionName": "bulk_order_pages",
+  "info": {
+    "singularName": "bulk-order-page",
+    "pluralName": "bulk-order-pages",
+    "displayName": "Bulk Order Page"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "heroTitle": {
+      "type": "string"
+    },
+    "heroSubtitle": {
+      "type": "text"
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "heroButtonText": {
+      "type": "string"
+    },
+    "whoWeServe": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.bulk-who-we-serve"
+    },
+    "furnitureCategories": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.bulk-category"
+    },
+    "whyChooseUs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.value"
+    },
+    "processSteps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.bulk-process-step"
+    },
+    "galleryImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "ctaTitle": {
+      "type": "string"
+    },
+    "ctaDescription": {
+      "type": "text"
+    }
+  }
+}
