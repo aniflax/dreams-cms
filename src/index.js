@@ -125,6 +125,43 @@ const mockData = {
       { icon: "clock", title: "Store Hours", detail: "Mon - Sat: 10 AM - 8 PM" }
     ]
   },
+  bulkOrder: {
+    heroTitle: "Bulk Furniture Solutions for Commercial and Residential Projects",
+    heroSubtitle: "From hospitality spaces and offices to developer projects and institutional setups, Dreams Furniture delivers premium furniture in volume with dependable execution.",
+    heroButtonText: "Request Bulk Quote",
+    whoWeServe: [
+      { title: "Hotels & Resorts", description: "Elegant guest room, lobby, and lounge furniture tailored for hospitality environments.", imageFile: "showroom.jpg" },
+      { title: "Offices & Workspaces", description: "Functional desks, chairs, workstations, and meeting room furniture for modern offices.", imageFile: "office-1.jpg" },
+      { title: "Restaurants & Cafes", description: "Durable seating and tables built for daily commercial use without compromising on style.", imageFile: "dining-1.jpg" },
+      { title: "Real Estate Developers", description: "Bulk furnishing support for sample flats, clubhouses, and complete residential projects.", imageFile: "bed-1.jpg" },
+      { title: "Interior Designers", description: "Reliable manufacturing and custom furniture support for turnkey interior projects.", imageFile: "wardrobe-1.jpg" },
+      { title: "Schools & Institutions", description: "Practical, robust furniture solutions for campuses, training centers, and institutional spaces.", imageFile: "dining-2.jpg" }
+    ],
+    furnitureCategories: [
+      { title: "Living Room", description: "Sofas, armchairs, coffee tables, and TV units for premium shared spaces.", imageFile: "sofa-1.jpg" },
+      { title: "Bedroom", description: "Beds, wardrobes, bedside tables, and complete room furniture packages.", imageFile: "bed-2.jpg" },
+      { title: "Dining", description: "Dining tables and dining chairs suitable for homes, hospitality, and cafes.", imageFile: "dining-2.jpg" },
+      { title: "Office", description: "Office chairs, workstations, executive desks, and conference tables.", imageFile: "office-1.jpg" },
+      { title: "Commercial", description: "Restaurant seating, reception furniture, and lounge seating for business spaces.", imageFile: "showroom.jpg" }
+    ],
+    whyChooseUs: [
+      { icon: "badge-percent", title: "Bulk Pricing", desc: "Project-friendly pricing and quantity-based cost efficiency for large requirements." },
+      { icon: "pencil-ruler", title: "Custom Designs", desc: "Flexible design support to align furniture with your layout and aesthetic goals." },
+      { icon: "shield-check", title: "High Quality Materials", desc: "Strong materials, quality finishes, and dependable workmanship across categories." },
+      { icon: "factory", title: "Fast Production", desc: "Planned production timelines to help keep your project delivery on track." },
+      { icon: "truck", title: "Pan India Delivery", desc: "Reliable logistics coordination for projects across cities and states." },
+      { icon: "headset", title: "Dedicated Project Support", desc: "A responsive team to assist with planning, quotations, and execution follow-through." }
+    ],
+    processSteps: [
+      { stepTitle: "Submit Request", stepDescription: "Share your furniture needs, project type, location, and expected quantities." },
+      { stepTitle: "Consultation with our team", stepDescription: "We understand your use case, style direction, and commercial requirements." },
+      { stepTitle: "Custom quotation", stepDescription: "Receive a tailored quotation with product scope, pricing, and estimated timelines." },
+      { stepTitle: "Manufacturing", stepDescription: "Once approved, we move into production with quality checks throughout the process." },
+      { stepTitle: "Delivery & installation", stepDescription: "We coordinate dispatch, on-site delivery, and setup support as required." }
+    ],
+    ctaTitle: "Planning a Bulk Furniture Project?",
+    ctaDescription: "Talk to Dreams Furniture for custom quotations, design coordination, and dependable project delivery."
+  },
   galleries: [
     "hero-bg.jpg", "sofa-1.jpg", "dining-2.jpg", "bed-1.jpg", "showroom.jpg", "sofa-2.jpg", "wardrobe-1.jpg", "dining-1.jpg", "office-1.jpg", "bed-2.jpg"
   ]
@@ -171,6 +208,69 @@ function textToBlocks(text) {
   ];
 }
 
+async function ensureBulkOrderPage(strapi, uploadedImages = {}) {
+  const existingPage = await strapi.documents('api::bulk-order-page.bulk-order-page').findFirst({
+    populate: ['heroImage', 'galleryImages']
+  });
+
+  if (existingPage) {
+    return;
+  }
+
+  const getImageId = async (fileName) => {
+    if (uploadedImages[fileName]?.id) {
+      return uploadedImages[fileName].id;
+    }
+
+    const existingFile = await strapi.db.query('plugin::upload.file').findOne({
+      where: { name: fileName }
+    });
+
+    return existingFile?.id;
+  };
+
+  const whoWeServe = [];
+  for (const item of mockData.bulkOrder.whoWeServe) {
+    whoWeServe.push({
+      title: item.title,
+      description: item.description,
+      icon: await getImageId(item.imageFile),
+    });
+  }
+
+  const furnitureCategories = [];
+  for (const item of mockData.bulkOrder.furnitureCategories) {
+    furnitureCategories.push({
+      title: item.title,
+      description: item.description,
+      image: await getImageId(item.imageFile),
+    });
+  }
+
+  const galleryImages = [];
+  for (const imageName of mockData.galleries.slice(0, 6)) {
+    const imageId = await getImageId(imageName);
+    if (imageId) galleryImages.push(imageId);
+  }
+
+  await strapi.documents('api::bulk-order-page.bulk-order-page').create({
+    data: {
+      heroTitle: mockData.bulkOrder.heroTitle,
+      heroSubtitle: mockData.bulkOrder.heroSubtitle,
+      heroImage: await getImageId('showroom.jpg'),
+      heroButtonText: mockData.bulkOrder.heroButtonText,
+      whoWeServe,
+      furnitureCategories,
+      whyChooseUs: mockData.bulkOrder.whyChooseUs,
+      processSteps: mockData.bulkOrder.processSteps,
+      galleryImages,
+      ctaTitle: mockData.bulkOrder.ctaTitle,
+      ctaDescription: mockData.bulkOrder.ctaDescription,
+      publishedAt: new Date()
+    }
+  });
+}
+
 module.exports = {
   register(/*{ strapi }*/) {},
 
@@ -186,7 +286,7 @@ module.exports = {
         return;
       }
 
-      const apis = ['product', 'category', 'homepage', 'about-page', 'contact-page', 'gallery'];
+      const apis = ['product', 'category', 'homepage', 'about-page', 'contact-page', 'gallery', 'bulk-order-page'];
 
       for (const api of apis) {
         for (const action of [`api::${api}.${api}.find`, `api::${api}.${api}.findOne`]) {
@@ -216,6 +316,7 @@ module.exports = {
 
     if (!shouldSeed) {
       await ensurePublicPermissions();
+      await ensureBulkOrderPage(strapi);
       console.log('Seed bootstrap disabled. Skipping...');
       return;
     }
@@ -223,6 +324,8 @@ module.exports = {
     // Check if we already seeded to avoid duplicates
     const productCount = await strapi.documents('api::product.product').count();
     if (productCount > 0) {
+      await ensurePublicPermissions();
+      await ensureBulkOrderPage(strapi);
       console.log('Database already seeded. Skipping...');
       return;
     }
@@ -309,6 +412,9 @@ module.exports = {
         });
       }
     }
+
+    // 8. Create Bulk Order Page
+    await ensureBulkOrderPage(strapi, uploadedImages);
 
     await ensurePublicPermissions();
 
